@@ -83,27 +83,27 @@ static SBIcon* lastClickIcon;
 }
 %end
 
-%hook _UIAlertControllerInterfaceActionGroupView
--(id)initWithAlertController:(UIAlertController*)arg1 actionGroup:(id)arg2 actionHandlerInvocationDelegate:(id)arg3
+%hook UIViewController
+- (void)presentViewController:(UIAlertController*)arg1 animated:(BOOL)arg2 completion:(id)arg3
 {
-	if([[arg1 _actions] count] == 1 && (arg1.title!=nil && [arg1.title isEqualToString:[[NSBundle bundleWithPath:@"/System/Library/CoreServices/SpringBoard.app"] localizedStringForKey:@"APP_FREE_DEVELOPER_PROFILE_NOT_TRUSTED_TITLE" value:@"" table:@"SpringBoard"]])) {
-		UIAlertAction* allowButton = [UIAlertAction actionWithTitle:[[NSBundle bundleWithPath:@"/System/Library/PreferenceBundles/ManagedConfigurationUI.bundle"] localizedStringForKey:@"TRUST" value:@"Trust" table:@"ManagedConfigurationUI"] style:UIAlertActionStyleDestructive handler:^(UIAlertAction * action) {
-			
-			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-				if(!lastClickIcon) {
-					return;
-				}
-				trustBundleID(lastClickIcon.applicationBundleID);
-				dispatch_async(dispatch_get_main_queue(), ^{
-					[[%c(SBIconController) sharedInstance] _launchIcon:lastClickIcon];
+	if(arg1&&[arg1 isKindOfClass:[UIAlertController class]]) {
+		if([[arg1 _actions] count] == 1 && (arg1.title!=nil && ([arg1.title isEqualToString:[[NSBundle bundleWithPath:@"/System/Library/CoreServices/SpringBoard.app"] localizedStringForKey:@"APP_FREE_DEVELOPER_PROFILE_NOT_TRUSTED_TITLE" value:@"" table:@"SpringBoard"]]||[arg1.title isEqualToString:[[NSBundle bundleWithPath:@"/System/Library/CoreServices/SpringBoard.app"] localizedStringForKey:@"APP_PROFILE_NOT_TRUSTED_TITLE" value:@"" table:@"SpringBoard"]]))) {
+			UIAlertAction* allowButton = [UIAlertAction actionWithTitle:[[NSBundle bundleWithPath:@"/System/Library/PreferenceBundles/ManagedConfigurationUI.bundle"] localizedStringForKey:@"TRUST" value:@"Trust" table:@"ManagedConfigurationUI"] style:UIAlertActionStyleDestructive handler:^(UIAlertAction * action) {
+				dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+					if(!lastClickIcon) {
+						return;
+					}
+					trustBundleID(lastClickIcon.applicationBundleID);
+					dispatch_async(dispatch_get_main_queue(), ^{
+						[[%c(SBIconController) sharedInstance] _launchIcon:lastClickIcon];
+					});
 				});
-			});
-			
-			[arg1 _dismissWithCancelAction];
-		}];
-		[arg1 addAction:allowButton];
+				[arg1 _dismissWithCancelAction];
+			}];
+			[arg1 addAction:allowButton];
+		}
 	}
-	return %orig;
+	%orig;
 }
 %end
 
