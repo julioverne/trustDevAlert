@@ -1,4 +1,4 @@
-include theos/makefiles/common.mk
+include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = trustAlert
 trustAlert_FILES = /mnt/d/codes/trustalert/Tweak.xm
@@ -10,8 +10,4 @@ trustAlert_ARCHS = armv7 arm64
 export ARCHS = armv7 arm64
 
 include $(THEOS_MAKE_PATH)/tweak.mk
-	
-	
-all::
-	@echo "DONE"
 	
